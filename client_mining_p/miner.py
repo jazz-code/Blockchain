@@ -20,7 +20,7 @@ def proof_of_work(block):
         proof +=1
     return proof
 
-
+@staticmethod
 def valid_proof(block_string, proof):
     """
     Validates the Proof:  Does hash(block_string, proof) contain 6
@@ -32,7 +32,11 @@ def valid_proof(block_string, proof):
     correct number of leading zeroes.
     :return: True if the resulting hash is a valid proof, False otherwise
     """
-    pass
+    guess = f"{block_string}{proof}".encode()
+    # function to return the hash
+    guess_hash = hashlib.sha256(guess_hash).hexdigest()
+
+    return guess_hash[:6] == "000000"
 
 
 if __name__ == '__main__':
