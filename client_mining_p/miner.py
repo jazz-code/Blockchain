@@ -35,7 +35,7 @@ def valid_proof(block_string, proof):
     guess = f"{block_string}{proof}".encode()
     # function to return the hash
     guess_hash = hashlib.sha256(guess_hash).hexdigest()
-
+    # valid_proof method validates 6 leading 0's of hash
     return guess_hash[:6] == "000000"
 
 
