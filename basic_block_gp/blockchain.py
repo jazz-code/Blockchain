@@ -62,8 +62,15 @@ class Blockchain(object):
         # or we'll have inconsistent hashes
 
         # TODO: Create the block_string
+        string_object = json.dumps(block, sort_keys=True).encode()
 
         # TODO: Hash this string using sha256
+        raw_hash = hashlib.sha256(string_object)
+
+        # hexdigest reformats as hexidecimal, strips ASCII, easier to work with
+        hex_hash = raw_hash.hexdigest()
+
+        return hex_hash
 
         # By itself, the sha256 function returns the hash in a raw string
         # that will likely include escaped characters.
@@ -86,9 +93,12 @@ class Blockchain(object):
         in an effort to find a number that is a valid proof
         :return: A valid proof for the provided block
         """
-        # TODO
-        pass
-        # return proof
+        block_string = json.dumps(block).encode()
+        proof = 0
+        while self.valid_proof(block_string, proof) is False:
+            # go to next number
+            proof += 1
+         return proof
 
     @staticmethod
     def valid_proof(block_string, proof):
@@ -134,6 +144,8 @@ def mine():
 def full_chain():
     response = {
         # TODO: Return the chain and its current length
+        'length': len(blockchain.chain),
+        'chain': blockchain.chain
     }
     return jsonify(response), 200
 
