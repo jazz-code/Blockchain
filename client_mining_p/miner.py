@@ -97,9 +97,8 @@ if __name__ == '__main__':
         # TODO: If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-        pass
-        # if data['message'] = 'New Block Fored':
-        #     print(data['message'])
+        if data['message'] = 'New Block Fored':
+            print(data['message'])
 
 
 # # Run the program on port 5000
