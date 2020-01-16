@@ -85,25 +85,25 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self, block):
-        """
-        Simple Proof of Work Algorithm
-        Stringify the block and look for a proof.
-        Loop through possibilities, checking each one against `valid_proof`
-        in an effort to find a number that is a valid proof
-        :return: A valid proof for the provided block
-        """
-        block_string = json.dumps(block)
-        proof = 0
-        while self.valid_proof(block_string, proof) is False:
-            # go to next number
-            proof += 1
-        return proof
+    # def proof_of_work(self, block):
+    #     """
+    #     Simple Proof of Work Algorithm
+    #     Stringify the block and look for a proof.
+    #     Loop through possibilities, checking each one against `valid_proof`
+    #     in an effort to find a number that is a valid proof
+    #     :return: A valid proof for the provided block
+    #     """
+    #     block_string = json.dumps(block)
+    #     proof = 0
+    #     while self.valid_proof(block_string, proof) is False:
+    #         # go to next number
+    #         proof += 1
+    #     return proof
 
     @staticmethod
     def valid_proof(block_string, proof):
         """
-        Validates the Proof:  Does hash(block_string, proof) contain 3
+        Validates the Proof:  Does hash(block_string, proof) contain 6
         leading zeroes?  Return true if the proof is valid
         :param block_string: <string> The stringified block to use to
         check in combination with `proof`
@@ -117,7 +117,7 @@ class Blockchain(object):
         guess_hash = hashlib.sha256(guess).hexdigest()
         # return True or False
 
-        return guess_hash[:6] == "000000"
+        return guess_hash[:3] == "000"
 
 
 # Instantiate our Node
@@ -130,42 +130,66 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET', 'POST']) #allow both GET and POST requests
+# @app.route('/mine', methods=['GET', 'POST']) #allow both GET and POST requests
+@app.route('/mine', methods=['POST']) 
 def mine():
-    # Run the proof of work algorithm to get the next proof
-    # proof = blockchain.proof_of_work(blockchain.chain[-1])
-                                    #blockchain.last_block
+    # Request goes here
+    # breakpoint()
 
+    # # if this request is a POST
+    # if request.method == 'POST':
     # pull the data out of the POST
     data = request.get_json()
 
-    # if this request is a POST
-    # if request.method == 'POST':
 
     # Check that 'proof', and 'id' are present
-    if ('proof' in data) and ('id' in data):
-        #  Get 'proof' and block_stringxxxxxxxxxxxxxxxxxxxxxxxxx    
-        proof = data['proof']
-        block_string = json.dumps(blockchain.last_block, sort_keys=True)
-        # Does hash(block_string, proof) contain 6 leading zeroes?
-        if block_string.valid_proof(block_string, proof):
-            # Forge the new Block by adding it to the chain with the proof
-            previous_hash = blockchain.hash(blockchain.last_block)
-            block = blockchain.new_block(proof, previous_hash)
-            # TODO: Send a JSON response with the new block
-            response = {
-                'message': "New Block Forged",
-                'index': block['index'],
-                'transactions': block['transactions'],
-                'proof': block['proof'],
-                'previous_hash': block['previous_hash'],
-            }
-            return jsonify(response), 200
-        else:
-            response = {
-                'message': "Proof was invalid or already submitted."
-            }
-            return jsonify(response), 200
+    required = ['proof', 'id']
+    if not all(k in data for k in required):
+        response = {'message': 'Missing values'}
+        return jsonify(response), 400
+
+    last_block = blockchain.last_block
+    last_block_string = json.dumps(last_block, sort_keys=True)
+
+    if blockchain.valid_proof(last_block_string, data['proof']):
+        previous_hash = blockchain.hash(blockchain.last_block)
+        block = blockchain.new_block(data['proof'], previous_hash)
+
+        response = {
+            'message': 'New Block Forged',
+            'new_block': block
+        }
+    else:
+        response = {
+            'message': 'Proof is not valid or already submitted'
+        }
+
+    return jsonify(response), 200
+
+
+    # if ('proof' in data) and ('id' in data):
+    #     #  Get 'proof' and block_stringxxxxxxxxxxxxxxxxxxxxxxxxx    
+    #     proof = data['proof']
+    #     block_string = json.dumps(blockchain.last_block, sort_keys=True)
+    #     # Does hash(block_string, proof) contain 6 leading zeroes?
+    #     if block_string.valid_proof(block_string, proof):
+    #         # Forge the new Block by adding it to the chain with the proof
+    #         previous_hash = blockchain.hash(blockchain.last_block)
+    #         block = blockchain.new_block(proof, previous_hash)
+    #         # TODO: Send a JSON response with the new block
+    #         response = {
+    #             'message': "New Block Forged",
+    #             'index': block['index'],
+    #             'transactions': block['transactions'],
+    #             'proof': block['proof'],
+    #             'previous_hash': block['previous_hash'],
+    #         }
+    #         return jsonify(response), 200
+    #     else:
+    #         response = {
+    #             'message': "Proof was invalid or already submitted."
+    #         }
+    #         return jsonify(response), 200
 
 
 @app.route('/chain', methods=['GET'])
@@ -180,10 +204,10 @@ def full_chain():
 
 @app.route('/last_block', methods=['GET'])
 def last_block():
-    last_block = blockchain.last_block
-# last_block = blockchain.last_block
+    # last_block = blockchain.last_block
+    # last_block = blockchain.last_block
     response = {
-        'last_block': last_block
+        'last_block': blockchain.last_block
     }
     return jsonify(response), 200
     # return jsonify(last_block), 200

@@ -3,7 +3,6 @@ import requests
 
 import sys
 import json
-import Blockchain from blockchain
 
 def proof_of_work(block):
     """
@@ -15,12 +14,11 @@ def proof_of_work(block):
     """
     block_string = json.dumps(block)
     proof = 0
-    while self.valid_proof(block_string, proof) is False:
-        #go to next number
-        proof +=1
+    while valid_proof(block_string, proof) is False:
+        proof += 1
     return proof
 
-@staticmethod
+
 def valid_proof(block_string, proof):
     """
     Validates the Proof:  Does hash(block_string, proof) contain 6
@@ -32,11 +30,11 @@ def valid_proof(block_string, proof):
     correct number of leading zeroes.
     :return: True if the resulting hash is a valid proof, False otherwise
     """
-    guess = f"{block_string}{proof}".encode()
-    # function to return the hash
-    guess_hash = hashlib.sha256(guess_hash).hexdigest()
-    # valid_proof method validates 6 leading 0's of hash
-    return guess_hash[:6] == "000000"
+    guess = f"{block_string} {proof}".encode()
+    guess_hash = hashlib.sha256(guess).hexdigest()
+
+    # return True or False
+    return guess_hash[:3] == "000"
 
 
 # # Instantiate our Node
@@ -84,10 +82,11 @@ if __name__ == '__main__':
             break
 
         # TODO: Get the block from `data` and use it to look for a new proof
-        last_block = r.json()
-
+        # breakpoint()
+        last_block = data['last_block']
+        # breakpoint()
         new_proof = proof_of_work(last_block)
-
+        # breakpoint()
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
 
@@ -97,9 +96,9 @@ if __name__ == '__main__':
         # TODO: If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-        if data['message'] = 'New Block Fored':
-            print(data['message'])
-
+        # if data['message'] = 'New Block Forged':
+        #     print(data['message'])
+        pass
 
 # # Run the program on port 5000
 # if __name__ == '__main__':
