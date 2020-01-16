@@ -3,7 +3,7 @@ import requests
 
 import sys
 import json
-
+import Blockchain from blockchain
 
 def proof_of_work(block):
     """
@@ -39,6 +39,25 @@ def valid_proof(block_string, proof):
     return guess_hash[:6] == "000000"
 
 
+# # Instantiate our Node
+# app = Flask(__name__)
+
+# # Generate a globally unique address for this node
+# node_identifier = str(uuid4()).replace('-', '')
+
+# # Instantiate the Blockchain
+# blockchain = Blockchain()
+
+# @app.route('/last_block', methods=['GET'])
+# def last_block():
+#     last_block = blockchain.last_block[-1]
+
+#     response = {
+#         'last_block': last_block
+#     }
+#     return jsonify(response), 200
+
+
 if __name__ == '__main__':
     # What is the server address? IE `python3 miner.py https://server.com/api/`
     if len(sys.argv) > 1:
@@ -65,7 +84,9 @@ if __name__ == '__main__':
             break
 
         # TODO: Get the block from `data` and use it to look for a new proof
-        # new_proof = ???
+        last_block = r.json()
+
+        new_proof = proof_of_work(last_block)
 
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
@@ -77,3 +98,10 @@ if __name__ == '__main__':
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
         pass
+        # if data['message'] = 'New Block Fored':
+        #     print(data['message'])
+
+
+# # Run the program on port 5000
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)

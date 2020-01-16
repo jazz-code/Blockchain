@@ -117,7 +117,7 @@ class Blockchain(object):
         guess_hash = hashlib.sha256(guess).hexdigest()
         # return True or False
 
-        return guess_hash[:3] == "000"
+        return guess_hash[:6] == "000000"
 
 
 # Instantiate our Node
@@ -130,21 +130,44 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['GET', 'POST']) #allow both GET and POST requests
 def mine():
     # Run the proof of work algorithm to get the next proof
     # proof = blockchain.proof_of_work(blockchain.chain[-1])
 
     # Forge the new Block by adding it to the chain with the proof
                                     #blockchain.last_block
-    previous_hash = blockchain.hash(blockchain.last_block)
-    block = blockchain.new_block(proof, previous_hash)
-    response = {
-        # TODO: Send a JSON response with the new block
-        'new block': block
-    }
 
-    return jsonify(response), 200
+    # pull the data out of the POST
+    data = request.get_json()
+    # if this request is a POST
+    if request.method == 'POST':
+    # Check that 'proof', and 'id' are present
+        if ('proof' in data and 'id' in data):
+            #  Get 'proof' and block_stringxxxxxxxxxxxxxxxxxxxxxxxxx    
+            proof = data['proof']
+            block_string = json.dumps(blockchain.last_block, sort_keys=True)
+            # Does hash(block_string, proof) contain 6 leading zeroes?
+            if block_string.valid_proof(block_string, proof):
+                previous_hash = blockchain.hash(blockchain.last_block)
+                block = blockchain.new_block(proof, previous_hash)
+                response = {
+                # TODO: Send a JSON response with the new block
+                'new block': block,
+                'message': 'New Block Forged'
+                }
+
+                return jsonify(response), 200
+            else:
+                response = {
+                    'message': 'Error 400'
+                }
+                return jsonify(response), 400
+        else:
+            response = {
+                'message': 'Error 400'
+            }
+            return jsonify(response), 400
 
 
 @app.route('/chain', methods=['GET'])
@@ -156,6 +179,16 @@ def full_chain():
     }
     return jsonify(response), 200
 
+
+@app.route('/last_block', methods=['GET'])
+def last_block():
+    last_block = blockchain.last_block
+# last_block = blockchain.last_block
+    response = {
+        'last_block': last_block
+    }
+    return jsonify(response), 200
+    # return jsonify(last_block), 200
 
 # Run the program on port 5000
 if __name__ == '__main__':
