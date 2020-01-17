@@ -105,12 +105,14 @@ class Blockchain(object):
             'amount': amount
         })
         return self.last_block['index'] + 1
+
 # Instantiate our Node
 app = Flask(__name__)
 # Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace('-', '')
 # Instantiate the Blockchain
 blockchain = Blockchain()
+
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     data = request.get_json()
@@ -123,19 +125,23 @@ def new_transaction():
                                        data['recipient'],
                                        data['amount'])
     response = {
-        'message': f'Transaction will post to block {index}.'
+        'message': f'Transaction will post to block {index}.',
+        'block': blockchain.last_block
     }
     return jsonify(response), 201
+
 @app.route('/mine', methods=['POST'])
 def mine():
     # There will be something called request here
     data = request.get_json()
     required = ['proof', 'id']
+
     if not all(k in data for k in required):
         response = {'message': "Missing values"}
         return jsonify(response), 400
     last_block = blockchain.last_block
     last_block_string = json.dumps(last_block, sort_keys=True)
+
     if blockchain.valid_proof(last_block_string, data['proof']):
         # Forge the new Block by adding it to the chain with the proof
         previous_hash = blockchain.hash(blockchain.last_block)
