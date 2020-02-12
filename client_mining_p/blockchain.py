@@ -84,37 +84,37 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self, block):
-        """
-        Simple Proof of Work Algorithm
-        Stringify the block and look for a proof.
-        Loop through possibilities, checking each one against `valid_proof`
-        in an effort to find a number that is a valid proof
-        :return: A valid proof for the provided block
-        """
-        block_string = json.dumps(block, sort_keys=True)
-        proof = 0
-        while self.valid_proof(block_string, proof) is False:
-            proof += 1
+    # def proof_of_work(self, block):
+    #     """
+    #     Simple Proof of Work Algorithm
+    #     Stringify the block and look for a proof.
+    #     Loop through possibilities, checking each one against `valid_proof`
+    #     in an effort to find a number that is a valid proof
+    #     :return: A valid proof for the provided block
+    #     """
+    #     block_string = json.dumps(block, sort_keys=True)
+    #     proof = 0
+    #     while self.valid_proof(block_string, proof) is False:
+    #         proof += 1
 
-        return proof
+    #     return proof
 
-    @staticmethod
-    def valid_proof(block_string, proof):
-        """
-        Validates the Proof:  Does hash(block_string, proof) contain 3
-        leading zeroes?  Return true if the proof is valid
-        :param block_string: <string> The stringified block to use to
-        check in combination with `proof`
-        :param proof: <int?> The value that when combined with the
-        stringified previous block results in a hash that has the
-        correct number of leading zeroes.
-        :return: True if the resulting hash is a valid proof, False otherwise
-        """
-        guess = f'{block_string}{proof}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
+    # @staticmethod
+    # def valid_proof(block_string, proof):
+    #     """
+    #     Validates the Proof:  Does hash(block_string, proof) contain 3
+    #     leading zeroes?  Return true if the proof is valid
+    #     :param block_string: <string> The stringified block to use to
+    #     check in combination with `proof`
+    #     :param proof: <int?> The value that when combined with the
+    #     stringified previous block results in a hash that has the
+    #     correct number of leading zeroes.
+    #     :return: True if the resulting hash is a valid proof, False otherwise
+    #     """
+    #     guess = f'{block_string}{proof}'.encode()
+    #     guess_hash = hashlib.sha256(guess).hexdigest()
 
-        return guess_hash[:3] == "000"
+    #     return guess_hash[:3] == "000"
 
 # Instantiate our Node
 app = Flask(__name__)
@@ -128,8 +128,18 @@ print(blockchain.chain)
 print(blockchain.hash(blockchain.last_block))
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
+    # Use `data = request.get_json()` to pull the data out of the POST
+    data = request.get_json()
+    print("data", data)
+    # Check that 'proof', and 'id' are present
+    check = ['proof', 'id']
+    if x not in data or x  in check:
+    
+        # return a 400 error using `jsonify(response)` with a 'message'
+        response = {'message':'Invalid data -- check your proof/id!'}
+        return jsonify(response), 400
     # Run the proof of work algorithm to get the next proof
     proof = blockchain.proof_of_work(blockchain.last_block)
     # Forge the new Block by adding it to the chain with the proof
@@ -155,7 +165,7 @@ def full_chain():
     return jsonify(response), 200
 
 
-@app.route('/lastblock', methods=['GET'])
+@app.route('/last_block', methods=['GET'])
 def last_block():
     response = {
         'last_block': blockchain.last_block
