@@ -100,21 +100,21 @@ class Blockchain(object):
     #     return proof
 
     # @staticmethod
-    # def valid_proof(block_string, proof):
-    #     """
-    #     Validates the Proof:  Does hash(block_string, proof) contain 3
-    #     leading zeroes?  Return true if the proof is valid
-    #     :param block_string: <string> The stringified block to use to
-    #     check in combination with `proof`
-    #     :param proof: <int?> The value that when combined with the
-    #     stringified previous block results in a hash that has the
-    #     correct number of leading zeroes.
-    #     :return: True if the resulting hash is a valid proof, False otherwise
-    #     """
-    #     guess = f'{block_string}{proof}'.encode()
-    #     guess_hash = hashlib.sha256(guess).hexdigest()
+    def valid_proof(self, block_string, proof):
+        """
+        Validates the Proof:  Does hash(block_string, proof) contain 3
+        leading zeroes?  Return true if the proof is valid
+        :param block_string: <string> The stringified block to use to
+        check in combination with `proof`
+        :param proof: <int?> The value that when combined with the
+        stringified previous block results in a hash that has the
+        correct number of leading zeroes.
+        :return: True if the resulting hash is a valid proof, False otherwise
+        """
+        guess = f'{block_string}{proof}'.encode()
+        guess_hash = hashlib.sha256(guess).hexdigest()
 
-    #     return guess_hash[:3] == "000"
+        return guess_hash[:6] == "000000"
 
 # Instantiate our Node
 app = Flask(__name__)
@@ -132,23 +132,27 @@ print(blockchain.hash(blockchain.last_block))
 def mine():
     # Use `data = request.get_json()` to pull the data out of the POST
     data = request.get_json()
-    print("data", data)
+    # print("data", data) outputs {'proof': 7700, 'id': 'Anthony R'}
+
     # Check that 'proof', and 'id' are present
-    check = ['proof', 'id']
-    if x not in data or x  in check:
-    
+    if data['proof'] and data['id']:
+        # if data['proof'] and data['id'] in data:
+        # print("True!!!!")
+        check_proof = data['proof']
+        string_object = json.dumps(blockchain.last_block, sort_keys=True)
+        if blockchain.valid_proof(string_object, check_proof):
+            previous_hash = blockchain.hash(blockchain.last_block)
+            new_block = blockchain.new_block(check_proof, previous_hash)
+    else:
         # return a 400 error using `jsonify(response)` with a 'message'
-        response = {'message':'Invalid data -- check your proof/id!'}
+        response = {'message': 'Invalid data -- check your proof/id!'}
         return jsonify(response), 400
-    # Run the proof of work algorithm to get the next proof
-    proof = blockchain.proof_of_work(blockchain.last_block)
-    # Forge the new Block by adding it to the chain with the proof
-    previous_hash = blockchain.hash(blockchain.last_block)
-    new_block = blockchain.new_block(proof, previous_hash)
 
     response = {
         # TODO: Send a JSON response with the new block
-        "block": new_block
+        "message": 'New Block Forged',
+        "new block": new_block
+        # 'message': 'test'
     }
 
     return jsonify(response), 200
