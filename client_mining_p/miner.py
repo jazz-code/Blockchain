@@ -62,8 +62,10 @@ if __name__ == '__main__':
             print("Response returned:")
             print(r)
             break
+        # except otherError:
 
         # TODO: Get the block from `data` and use it to look for a new proof
+        # breakpoint()
         last_block = data['last_block']
         # print(f"Last block: {last_block}")
         new_proof = proof_of_work(last_block)
