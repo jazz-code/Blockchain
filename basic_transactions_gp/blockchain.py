@@ -120,6 +120,7 @@ class Blockchain(object):
 
 # Instantiate our Node
 app = Flask(__name__)
+CORS(app)
 
 # Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace('-', '')
@@ -171,6 +172,7 @@ def mine():
 
         response = {
             # TODO: Send a JSON response with the new block
+            "message": "New Block Forged",
             "block": new_block,
             "reward": f"Reward paid in block {block_index}"
         }
